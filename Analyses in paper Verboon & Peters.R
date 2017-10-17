@@ -1,85 +1,77 @@
-
 ## Analyses in paper: Applying the generalised logistic model in single case designs to deal with ceiling effects
 ## Authors: Peter Verboon & Gjalt-Jorn Peters
 ## Date: 22-9-2017 
 
-require(minpack.lm)     # contains function nlsLM for nonlinear fitting
-require(ggplot2)
-require(dplyr)
+### Load required packages
 require(userfriendlyscience)
+safeRequire('ggplot2');
+# 
+# safeRequire(minpack.lm);
+# safeRequire(dplyr);
 
-options(digits=4);
+defaultLineColor <- "#35B779FF"; ### viridis(4)[3]
+defaultWidth = 20;
+defaultHeight = 16;
 
-# Parameters definitions:
-# x0 = center of x values in the crossover area: point at which y = 0.5(At + Ab)
-# Ab = asymptotic base of the function
-# At = asymptotic top of the function
-# B  = scaling factor, controls steepness of curve (growth rate)
-# v  = not used in this study (fixed at v = 1)
+########################################################################
+### Data construction for Example1
+###
+### (retained solely for documentation purposes; data is read from disk)
+########################################################################
+# 
+# nA <- 5;          # nA : number of measurement in phase A
+# nB <- 30;         # nB : number of measurement in phase B
+# 
+# x <- c(1:nB)
+# y <- genlogf(x, x0=10, Ab=1.5, At=6.5, B = 0.3, v = 1) 
+# 
+# yA <- rnorm(nA, 1.5, 0.5)                                   # the first observations in A phase are without effect
+# 
+# y <- c(yA,y)
+# sdy <- sd(y)
+# 
+# x <- c(1:(nA+nB))
+# y <- y + rnorm(length(x),0, 0.5*sdy)                        # add random error to curve: dependent varable
+# y[y < 1] <- 1;  y[y > 7] <- 7                               # add hard floor and ceiling effects
+# 
+# 
+# dat <- data.frame(x=x,y=y)
+# a <- data.frame(x = (31:35),y = rnorm(5, 6.5, 0.2) )        # add aditional random error in last five points
+# dat1 <- rbind(dat,a)
+# 
+# ### Changed '30' to '35' (2017-10-16, Gjalt-Jorn)
+# dat1$Phase <- c(rep(1,5),rep(2,35))
+# 
+# meanDiff(x=dat1$Phase, y= dat1$y)                  ## simple test of phase difference
+# 
+# write.table(dat1, "datExample1.txt", sep="\t")     ## save example outside R
 
-# Define formula for S-curve: generalized logistic 
+########################################################################
+## Example 1: linear fit
+########################################################################
 
-GLF <- "y ~ Ab + (At - Ab)/ (1 + exp(-B*(x-x0)))**(1/v)"    # formula S-curve with scaling factor B and v
-
-
-
-
-####  Definition Generalized Logistic function with scaling factor
-
-genlogf <- function(x, x0 = 10, Ab = 1, At=7, B = 0.5, v = 1) {
-  
-  y = Ab + ((At - Ab)/ (1 + exp(-B*(x-x0)))**(1/v)) 
-  return(y)
-  
-}    # end function
-
-
-
-## Data construction for Example1 
-
-
-nA <- 5;          # nA : number of measurement in phase A
-nB <- 30;         # nB : number of measurement in phase B
-
-x <- c(1:nB)
-y <- genlogf(x, x0=10, Ab=1.5, At=6.5, B = 0.3, v = 1) 
-
-yA <- rnorm(nA, 1.5, 0.5)                                   # the first observations in A phase are without effect
-
-y <- c(yA,y)
-sdy <- sd(y)
-
-x <- c(1:(nA+nB))
-y <- y + rnorm(length(x),0, 0.5*sdy)                        # add random error to curve: dependent varable
-y[y < 1] <- 1;  y[y > 7] <- 7                               # add hard floor and ceiling effects
-
-
-dat <- data.frame(x=x,y=y)
-a <- data.frame(x = (31:35),y = rnorm(5, 6.5, 0.2) )        # add aditional random error in last five points
-dat1 <- rbind(dat,a)
-
-dat1$Phase <- c(rep(1,5),rep(2,30))
-
-meanDiff(x=dat1$Phase, y= dat1$y)                  ## simple test of phase difference
-
-write.table(dat1, "datExample1.txt", sep="\t")     ## save example outside R
-
-
-######## End data construction for example
-
-
-
-dat1 <- read.table("datExampl1.txt",sep="\t")   
+### Load data
+dat1 <- read.table("datExample1.txt",sep="\t")   
 dat1$Phase <- dat1$Phase - 1 
 
+### Figure 1 from paper
+figure1 <- ggplot(dat1) +
+  geom_point(aes(x=x,y=y)) +
+  coord_cartesian(ylim=c(0,8)) +
+  theme_minimal() +
+  labs(x = "measurements points", y = "score", title = NULL);
 
-# Figure 1 from paper 
+print(figure1);
 
-g <- ggplot(dat1) + geom_point(aes(x=x,y=y))                
-g  
+### Store to disk
+ggsave(plot = figure1,
+       filename="figure-1.png",
+       type='cairo',
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
 ### Example: linear fit 
-
 lmout <- lm(dat1$y ~ dat1$x)
 coef(lmout)
 deviance(lmout)
@@ -87,33 +79,67 @@ summary(lmout)
 acf(residuals(lmout))[1]
 dat1$res <-residuals(lmout)
 
-# Figure 2 from paper
+### Figure 2 from paper
+figure2 <- ggplot(dat1, aes(x=x,y=y)) +
+  geom_point() +
+  geom_smooth(method = "lm",
+              size = 1,
+              se = TRUE,
+              color=defaultLineColor,
+              fill=defaultLineColor) +
+  coord_cartesian(ylim=c(0,8)) +
+  theme_minimal() +
+  labs(x = "measurements points", y = "score", title = NULL);
 
-g <- ggplot(dat1,aes(x=x,y=y))                   
-g <- g + geom_point()
-g <- g + labs(x = "measurements points", y = "score", title = " ")
-g <- g + geom_smooth(method = lm, size = 1.0, se = TRUE)
-g
+print(figure2);
 
+### Store to disk
+ggsave(plot = figure2,
+       filename="figure-2.png",
+       type='cairo',
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
-# Figure 3 from paper
+### Figure 3 from paper
 
-g <- qplot(data = dat1, x, res, xlab = "measurements points", ylab = "residuals")
-g <- g + geom_smooth(method = "loess", size = 1.0)
-g
+figure3 <- ggplot(dat1, aes(x=x, y=res)) +
+  geom_point() +
+  geom_smooth(method = "loess",
+              size = 1,
+              color=defaultLineColor,
+              fill=defaultLineColor) +
+  theme_minimal() +
+  labs(x = "measurements points",
+       y = "residuals");
 
+print(figure3);
 
-### End example: linear fit
+### Store to disk
+ggsave(plot = figure3,
+       filename="figure-3.png",
+       type='cairo',
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
-
-
-### Example Piecewise Regression
+########################################################################
+## Example 2: Piecewise regression
+########################################################################
 
 # dat1$Phase <- c(rep(1,5),rep(2,30))
 # ypre <- dat1[c(1:5),"y"]
 # ypost <- dat1[c(6:35),"y"]
 
 meanDiff(x=dat1$Phase, y= dat1$y)                 ## simple test of phase difference
+
+piecewiseRegr(dat1,
+              timeVar = 'x',
+              yVar = 'y',
+              phaseVar = 'Phase',
+              outputFile = "figure-4.png",
+              outputWidth = defaultWidth,
+              outputHeight = defaultHeight);
 
 dat1$x0 <- dat1$x - 1                             ## first observation index is set to zero 
 nA <- 5
