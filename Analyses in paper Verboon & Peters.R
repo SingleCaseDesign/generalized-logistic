@@ -5,13 +5,14 @@
 ### Load required packages
 require(userfriendlyscience)
 safeRequire('ggplot2');
-# 
-# safeRequire(minpack.lm);
-# safeRequire(dplyr);
 
+### Set color and size for plots
 defaultLineColor <- "#35B779FF"; ### viridis(4)[3]
 defaultWidth = 20;
 defaultHeight = 16;
+
+### Set seed to ensure replicable results
+set.seed(20171017);
 
 ########################################################################
 ### Data construction for Example1
@@ -124,7 +125,7 @@ ggsave(plot = figure3,
        units='cm');
 
 ########################################################################
-## Example 2: Piecewise regression
+## Example 2: Piecewise regression without phase effect
 ########################################################################
 
 # dat1$Phase <- c(rep(1,5),rep(2,30))
@@ -141,26 +142,6 @@ piecewiseRegr(dat1,
               outputWidth = defaultWidth,
               outputHeight = defaultHeight);
 
-dat1$x0 <- dat1$x - 1                             ## first observation index is set to zero 
-nA <- 5
-out <- PWreg(dat1[,c("x0","y")],nA = 5, robust=FALSE)        ## piecewise regression, uses function PWreg
-yfit <- out[[2]]$fitted.values
-ypre <- out[[2]]$coefficients[1] + out[[2]]$coefficients[3]*dat1[c(1:6),"x0"]
-
-out[[2]]$coefficients
-confint(out[[2]], c("D","Tc","X3"), level = 0.95)
-
-
-# Figure 4 from paper
-
-g <- qplot(data = dat1, x0, y, xlab = "measurements points", ylab = "scores")
-g <- g + geom_line(aes(x0, y=yfit, group=Phase))
-g <- g + geom_vline(xintercept= (nA-.5), colour="red", size = 1.5) 
-g <- g + geom_segment(aes(x=nA, xend=nA, y=yfit[(nA+1)], yend=ypre[(nA+1)]),linetype=1, colour = "green", size=1)
-g <- g + geom_segment(aes(x=(nA-1), xend=nA, y=ypre[nA], yend=ypre[(nA+1)]),colour="blue", linetype = "dashed")
-g <- g + geom_smooth(method="lm", aes(group = Phase))
-g
-
 ### Linear regression per phase
 
 out0 <- lm(dat1[c(1:5),"y"] ~ dat1[c(1:5),"x"])
@@ -171,48 +152,36 @@ out1 <- lm(dat1[c(6:35),"y"] ~ dat1[c(6:35),"x2"])
 coef(out1)
 confint(out1, level = 0.95)
 
+########################################################################
+## Example 3: Piecewise regression with phase effect
+########################################################################
 
-### Example to show phase effect
+dat5 <- data.frame(x = 0:19,
+                   y = c(rnorm(5, 1.5, .8),
+                         rnorm(15, 3, .8)),
+                   phase = c(rep(0,5),
+                             rep(1,15)));
 
-a <- rnorm(5, 1.5, 0.8)
-b <- rnorm(15, 3.0, 0.8)
-y <- c(a,b)
-x0 <- c(0:19)
-dat2 <- data.frame(cbind(x0,y))
-dat2$phase <- c(rep(0,5), rep(1,15))
-nA <- 5
-ypre <- dat2[c(1:5),"y"]
-ypost <- dat2[c(6:35),"y"]
+piecewiseRegr(dat5,
+              timeVar = 'x',
+              yVar = 'y',
+              phaseVar = 'phase',
+              outputFile = "figure-5.png",
+              outputWidth = defaultWidth,
+              outputHeight = defaultHeight);
 
-meanDiff(x=dat2$phase, y= dat2$y)
+### T-test for difference between means
+meanDiff(x=dat2$phase, y= dat2$y);
 
-out <- PWreg(dat2[,c("x0","y")],nA = 5, robust=FALSE)  ## piecewise regression
-yfit <- out[[2]]$fitted.values
-ypre <- out[[2]]$coefficients[1] + out[[2]]$coefficients[3]*dat2[c(1:6),"x0"]
+########################################################################
+## Example 4: Generalized Logistic Analysis
+########################################################################
 
-confint(out[[2]], c("D","Tc","X3"), level = 0.95)
-
-# Figure 5 from paper 
-
-g <- qplot(data = dat2, x0, y, xlab = "measurements points", ylab = "scores" )
-g <- g + geom_line(aes(x0, y=yfit, group=phase))
-g <- g + geom_vline(xintercept= (nA-.5), colour="red", size = 1.5) 
-g <- g + geom_segment(aes(x=nA, xend=nA, y=yfit[(nA+1)], yend=ypre[(nA+1)]),linetype=1, colour = "green", size=1)
-g <- g + geom_segment(aes(x=(nA-1), xend=nA, y=ypre[nA], yend=ypre[(nA+1)]),colour="blue", linetype = "dashed")
-g <- g + geom_smooth(method="lm", aes(group = phase))
-g <- g + scale_y_continuous(limits = c(0,6))
-g <- g + annotate("text", x = 6.5, y = 2.6, label = "level effect", colour = "black", size=4)
-g
-
-
-
-###  Example genlog function
-
-
-# Figure 6 paper
-
-genlog(dat1, Xs=10, Bs=.5, ABs = 1, ATs = 7 , range=8,plot=TRUE)
-
-
-
+genlog(dat1,
+       timeVar = 'x',
+       yVar = 'y',
+       phaseVar = 'Phase',
+       outputFile = "figure-6.png",
+       outputWidth = defaultWidth,
+       outputHeight = defaultHeight);
 
