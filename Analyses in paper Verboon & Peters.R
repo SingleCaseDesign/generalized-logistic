@@ -5,9 +5,13 @@
 ### Load required packages
 require(userfriendlyscience)
 safeRequire('ggplot2');
+safeRequire('gridExtra');
 
 ### Set color and size for plots
-defaultLineColor <- "#35B779FF"; ### viridis(4)[3]
+defaultLineColor <- "#35B779FF";   ### viridis(4)[3]
+defaultBoundsColor <- "#FDE725FF"; ### viridis(4)[4]
+defaultCurvecolor <- "#35B779FF";  ### viridis(4)[3]
+defaultMidColor <- "#31688EFF";    ### viridis(4)[2]
 defaultWidth = 20;
 defaultHeight = 16;
 
@@ -184,4 +188,105 @@ genlog(dat1,
        outputFile = "figure-6.png",
        outputWidth = defaultWidth,
        outputHeight = defaultHeight);
+
+########################################################################
+## Figure 7
+########################################################################
+
+####  Definition Generalized Logistic function (NB "B" is in exp()) with scaling factor
+genlogf <- function(x, x0 = 10, Ab = 1, At=7, B = 0.5, v = 1) {
+  return(Ab + ((At - Ab)/ (1 + exp(-B*(x-x0)))**(1/v)));
+}
+
+x <- 1:35;
+Ab <- 1;
+At <- 7;
+x0 <- 10;
+Blist <- c(-0.2,-0.5,-1, 0.2, .5, 1);
+vlist <- c(0.1, 0.5, 1.0, 1.5);
+
+fig7_plots <- list();
+for (i in 1:6) {
+  fig7_plots[[i]] <-
+    ggplot() +
+    geom_hline(yintercept=Ab, colour=defaultBoundsColor) +
+    geom_hline(yintercept=At, colour=defaultBoundsColor) +
+    geom_vline(xintercept=x0, colour=defaultMidColor) +
+    geom_line(data=data.frame(x=x,
+                              y=genlogf(x
+                                        x0=x0,
+                                        Ab=Ab,
+                                        At=At,
+                                        B=Blist[i],
+                                        v=1)),
+              aes(x=x, y=y),
+              color=defaultCurvecolor,
+              size = 1) +
+    theme_minimal() +
+    scale_y_continuous(breaks=1:7, labels=1:7) +
+    labs(x = "Measurement points",
+         y = "Score",
+         title = paste("Growth rate =", Blist[i]));
+}
+figure7 <- grid.arrange(grobs = fig7_plots, ncol = 2,
+                        as.table=FALSE)
+
+grid.newpage();
+grid.draw(figure7);
+
+### Store to disk
+ggsave(plot = figure7,
+       filename="figure-7.png",
+       type='cairo',
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
+
+########################################################################
+## Obsolete code
+########################################################################
+
+
+
+Ab <- 1;
+At <- 7;
+x0 <- 10;
+B <- .4;
+vlist <- c(0.5, 1.0, 1.5);
+x0list <- c(5,10,15);
+Blist <- c(-0.2,-0.5,-1, 0.2, .5, 1);
+plots <- list();
+
+for (i in 1:3) {
+  for (j in 1:3) {
+    plots[[length(plots) + 1]] <- 
+      ggplot() +
+      geom_hline(yintercept=Ab, colour=defaultBoundsColor) +
+      geom_hline(yintercept=At, colour=defaultBoundsColor) +
+      geom_vline(xintercept=x0, colour=defaultMidColor) +
+      geom_line(data=data.frame(x=1:35,
+                                y=genlogf(1:35,
+                                          x0=x0list[j],
+                                          Ab=Ab,
+                                          At=At,
+                                          B=B,
+                                          v=vlist[i])),
+                aes(x=x, y=y),
+                colour=defaultCurvecolor,
+                size = 1) +
+      theme_minimal() +
+      coord_cartesian(ylim=c(1, 7)) +
+      labs(x = "measurement points",
+           y = "score",
+           title = paste0("Growth rate = ",
+                          Blist[3*i+j],
+                          "(v=",
+                          vlist[i],
+                          "; x0=",
+                          x0list[j],
+                          ")"));
+  }
+}
+
+grid.arrange(grobs = plots, ncol = 3);
 
