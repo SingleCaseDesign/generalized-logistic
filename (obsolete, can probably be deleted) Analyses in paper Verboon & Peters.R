@@ -1,11 +1,13 @@
-## Analyses in paper: Applying the generalised logistic model in single case designs to deal with ceiling effects
+## Analyses in paper: Applying the generalised logistic model in single case designs: modelling treatment-induced shifts
 ## Authors: Peter Verboon & Gjalt-Jorn Peters
 ## Date: 22-9-2017 
 
 ### Load required packages
 require(userfriendlyscience)
 safeRequire('ggplot2');
+safeRequire('grid');
 safeRequire('gridExtra');
+safeRequire('viridis');
 
 ### Set color and size for plots
 defaultLineColor <- "#35B779FF";   ### viridis(4)[3]
@@ -45,7 +47,7 @@ set.seed(20171017);
 # dat1 <- rbind(dat,a)
 # 
 # ### Changed '30' to '35' (2017-10-16, Gjalt-Jorn)
-# dat1$Phase <- c(rep(1,5),rep(2,35))
+# dat1$Phase <- c(rep(0,5),rep(1,35))
 # 
 # meanDiff(x=dat1$Phase, y= dat1$y)                  ## simple test of phase difference
 # 
@@ -138,11 +140,12 @@ ggsave(plot = figure3,
 
 meanDiff(x=dat1$Phase, y= dat1$y)                 ## simple test of phase difference
 
-piecewiseRegr(dat1,
+a<-piecewiseRegr(dat1,
               timeVar = 'x',
               yVar = 'y',
               phaseVar = 'Phase',
               outputFile = "figure-4.png",
+              showPlot=FALSE,
               outputWidth = defaultWidth,
               outputHeight = defaultHeight);
 
@@ -175,7 +178,7 @@ piecewiseRegr(dat5,
               outputHeight = defaultHeight);
 
 ### T-test for difference between means
-meanDiff(x=dat2$phase, y= dat2$y);
+meanDiff(x=dat5$phase, y= dat5$y);
 
 ########################################################################
 ## Example 4: Generalized Logistic Analysis
@@ -198,39 +201,36 @@ genlogf <- function(x, x0 = 10, Ab = 1, At=7, B = 0.5, v = 1) {
   return(Ab + ((At - Ab)/ (1 + exp(-B*(x-x0)))**(1/v)));
 }
 
-x <- 1:35;
-Ab <- 1;
-At <- 7;
-x0 <- 10;
-Blist <- c(-0.2,-0.5,-1, 0.2, .5, 1);
-vlist <- c(0.1, 0.5, 1.0, 1.5);
+fig7_plots <- lapply(1:6, function(i, x = 1:35, Ab = 1, At = 7,
+                                   x0 = 10,
+                                   Blist = c(-0.2,-0.5,-1, 0.2, .5, 1)) {
+  return(ggplot() +
+           geom_hline(yintercept=Ab, colour=defaultBoundsColor) +
+           geom_hline(yintercept=At, colour=defaultBoundsColor) +
+           geom_vline(xintercept=x0, colour=defaultMidColor) +
+           geom_line(data=data.frame(x=x,
+                                     y=genlogf(x,
+                                               x0=x0,
+                                               Ab=Ab,
+                                               At=At,
+                                               B=Blist[i],
+                                               v=1)),
+                     aes(x=x, y=y),
+                     color=defaultCurvecolor,
+                     size = 1) +
+           theme_minimal() +
+           scale_y_continuous(breaks=1:7, labels=1:7) +
+           labs(x = "Measurement points",
+                y = "Score",
+                title = paste("Growth rate =", Blist[i])));
+});
 
-fig7_plots <- list();
-for (i in 1:6) {
-  fig7_plots[[i]] <-
-    ggplot() +
-    geom_hline(yintercept=Ab, colour=defaultBoundsColor) +
-    geom_hline(yintercept=At, colour=defaultBoundsColor) +
-    geom_vline(xintercept=x0, colour=defaultMidColor) +
-    geom_line(data=data.frame(x=x,
-                              y=genlogf(x
-                                        x0=x0,
-                                        Ab=Ab,
-                                        At=At,
-                                        B=Blist[i],
-                                        v=1)),
-              aes(x=x, y=y),
-              color=defaultCurvecolor,
-              size = 1) +
-    theme_minimal() +
-    scale_y_continuous(breaks=1:7, labels=1:7) +
-    labs(x = "Measurement points",
-         y = "Score",
-         title = paste("Growth rate =", Blist[i]));
-}
-figure7 <- grid.arrange(grobs = fig7_plots, ncol = 2,
+### Combine plots
+figure7 <- grid.arrange(grobs = fig7_plots,
+                        ncol = 2,
                         as.table=FALSE)
 
+### Draw
 grid.newpage();
 grid.draw(figure7);
 
@@ -243,10 +243,88 @@ ggsave(plot = figure7,
        units='cm');
 
 ########################################################################
-## Obsolete code
+## Figure 8
 ########################################################################
 
+data(Singh);
 
+fig8_plots <- lapply(1:6, function(i, dat = Singh) {
+  tier <- ceiling(i/2);
+  dv <- names(dat)[5+is.even(i)];
+  dvLabel <- c("Physical aggression", "Verbal aggression")[1+is.even(i)];
+  dat <- dat[dat$tier == tier, c('time', 'phase', dv, 'id')];
+  interventionX <- mean(c(max(dat[dat$phase==min(dat$phase), 'time']),
+                          min(dat[dat$phase==max(dat$phase), 'time'])));
+  return(ggplot(data =  dat,
+         aes_string(x = 'time', y=dv)) +
+           geom_vline(xintercept=interventionX) +
+           geom_point() +
+           geom_line(aes(group=phase)) +
+           theme_minimal() +
+           labs(x='Weeks',
+                y = 'Score',
+                title = paste0(unique(dat$id),
+                               ": ",
+                               dvLabel)));
+});
+
+
+### Combine plots
+figure8 <- grid.arrange(grobs = fig8_plots,
+                        ncol = 2);
+
+### Draw
+grid.newpage();
+grid.draw(figure8);
+
+### Store to disk
+ggsave(plot = figure8,
+       filename="figure-8.png",
+       type='cairo',
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
+
+########################################################################
+## Figure 9
+########################################################################
+
+fig9_plots <- lapply(1:6, function(i, dat = Singh) {
+  tier <- ceiling(i/2);
+  dv <- names(dat)[5+is.even(i)];
+  dvLabel <- c("Physical aggression", "Verbal aggression")[1+is.even(i)];
+  dat <- dat[dat$tier == tier, c('time', 'phase', dv, 'id')];
+  return(genlog(dat,
+                timeVar = 'time',
+                yVar = dv,
+                phaseVar = 'phase')$output$plot +
+           labs(x='Weeks',
+                y = 'Score',
+                title=paste0(unique(dat$id),
+                             ": ",
+                             dvLabel)));
+});
+
+
+### Combine plots
+figure9 <- grid.arrange(grobs = fig9_plots,
+                        ncol = 2);
+
+### Draw
+grid.newpage();
+grid.draw(figure9);
+
+### Store to disk
+ggsave(plot = figure9,
+       filename="figure-9.png",
+       type='cairo',
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
+
+########################################################################
+## Old code
+########################################################################
 
 Ab <- 1;
 At <- 7;
