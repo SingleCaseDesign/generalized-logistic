@@ -6,10 +6,99 @@ date: "18 October 2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+# Part 1: Tutorial
 
+This brief tutorial illustrates how the two functions introduced in Verboon & Peters (2017) can be used.
+
+```{r tutorial-setup, include=FALSE}
 ### Show all R commands
 knitr::opts_chunk$set(echo = TRUE);
+require('userfriendlyscience');
+```
+
+## Loading the package and data
+
+We start by installing and loading the package:
+
+```{r tutorial-0, eval=FALSE}
+install.packages('userfriendlyscience');
+require('userfriendlyscience');
+```
+
+Now that the package is installed and loaded, we can load the data. This can be done using a variety of functions, for example using `getData` from the userfriendlyscience package to display a dialogue to select the datafile:
+
+```{r tutorial-1, eval=FALSE}
+getDat();
+```
+
+This function stores the data in a dataframe called `dat`.
+
+In this example, we will use the data from Singh (2007). This is included in the userfriendlyscience R package, and can be loaded by using the `data` function:
+
+```{r tutorial-2}
+data(Singh);
+```
+
+This function loads the Singh data into a dataframe called Singh. This data concerns three participants, and we will only work with one participant in this example. We will therefore extract those lines from the `Signh` dataframe and store that selection in a dataframe called `dat`:
+
+```{r tutorial-3}
+dat <- Singh[Singh$id=='Jason', ];
+```
+
+## Piecewise regression
+
+To conduct the piecewise regression analysis, we use function `piecewiseRegr`, where we specify the name of the dataframe to use (`dat`), and in that datarame, the variable names (or column names) of the variables specifying the measurement moment (`timeVar='time'`), the dependent variable (`yVar='score_physical'`), and the variable indicating in which phase that datapoint was measured (`phaseVar='phase'`). This last variable should consist of only two values: the measurements preceding the start of the intervention should have the lowest value, and the measurements following the start of the intervention should have the highest value.
+
+```{r tutorial-4}
+piecewiseRegr(dat,
+              timeVar='time',
+              yVar='score_physical',
+              phaseVar='phase');
+```
+
+Instead of using the `phaseVar` argument to specify a variable that indicates each measurement moments' phase, it is also possible to specify manually at which moment the intervention too place. To do this, use argument `baselineMeasurements` to specify how many baseline measurements there are. For example, we could 'pretend' that the intervention only started after five measurements (instead of after three measurements):
+
+```{r tutorial-5}
+piecewiseRegr(dat,
+              timeVar='time',
+              yVar='score_physical',
+              baselineMeasurements=5);
+```
+
+## Generalized Logistic Analysis
+
+The generalized logistic analysis is conducted by using the function `genlog`. The arguments have the same name as in function `piecewiseRegr`, that is, `timeVar`, `yVar`, and `phaseVar`, and it is again possible to use `baselineMeasurements` to manually specify when the intervention took place.
+
+```{r tutorial-6}
+genlog(dat,
+       timeVar='time',
+       yVar='score_physical',
+       phaseVar='phase');
+```
+
+## Final thoughts and customization
+
+A datafile used for `piecewiseRegr` and/or `genlog` should at the minimum contain two columns: one containing the measurements of the dependent variable, and one containing the measurement moments. This last column can either contain the dates of the measurements or an index ('rank') of the dates. If the measurement moments were roughly equally spaced over time, it doesn't matter much which is used; if the interval between consecutive measurement moments is varied, it is better to specify the exact dates.
+
+It is possible to easily store the produced plot to a file. To do this, provide a path and filename to argument `outputFile`. The size of the exported figure can be specified in `outputWidth` and `outputHeight`, and parameters to tweak the export can be specified in `ggsaveParams`.
+
+For `piecewiseRegr`, the colors used to draw the plot can be changed by providing a `colors` parameter, which must be a list containing five values specifying the desired colors for the regression `pre` intervention, `post` intervention, the `diff`erence between the two phases, the `intervention`, and the `points`.
+
+For `genlog`, the colors used to draw the plot can be changed by providing a `colors` parameter, which must be a list containing five values specifying the desired colors for the upper and lower `bounds`, the sigmoid `curve`, the vertical line showing where the change is maximal (`mid`), the vertical line showing then the `intervention` started, and the `points`.
+
+For both functions, further customization is possible by specifying the ggplot2 `theme` to use, the `pointSize` and `pointAlpha` (the transparency, or rather, opaqueness, of the points),  the `lineSize`. The `genlog` function has an additional parameter `curveMultiplier`, used to multiply the size of the sigmoid curve compared to the other lines.
+
+To use different starting values and bounds when estimating the sigmoid, manually specify values for the `yRange`, `startX`, `startBase`, `startTop`, `startGrowthRate`, and `startV` to set the starting values, and `changeInitiationBounds`, `growthRateBounds`, `baseBounds`, `topBounds`, and `vBounds` to set the bounds. Instead of specifying `baseBounds` and `topBounds`, it's also possible to use `baseMargin` and `topMargin` to specify margins that will then be combined with the range of the dependent variable to set the constraints.
+
+
+# Part 2: Appendix
+
+This section reproduces the Figures used in the paper.
+
+```{r appendix-setup, include=FALSE}
+
+### Show all R commands
+knitr::opts_chunk$set(echo = FALSE);
 
 ### Load required packages
 require(userfriendlyscience)
@@ -154,13 +243,13 @@ ggsave(plot = figure3,
 ```{r fig4}
 
 a<-piecewiseRegr(dat1,
-              timeVar = 'x',
-              yVar = 'y',
-              phaseVar = 'Phase',
-              outputFile = "figure-4.png",
-              showPlot=FALSE,
-              outputWidth = defaultWidth,
-              outputHeight = defaultHeight);
+                 timeVar = 'x',
+                 yVar = 'y',
+                 phaseVar = 'Phase',
+                 outputFile = "figure-4.png",
+                 showPlot=FALSE,
+                 outputWidth = defaultWidth,
+                 outputHeight = defaultHeight);
 
 ```
 
