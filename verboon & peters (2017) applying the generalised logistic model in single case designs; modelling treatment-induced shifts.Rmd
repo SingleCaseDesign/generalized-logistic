@@ -115,14 +115,14 @@ defaultMidColor <- "#31688EFF";    ### viridis(4)[2]
 defaultWidth = 20;
 defaultHeight = 16;
 
-### Set seed to ensure replicable results
-set.seed(20171017);
-
 ```
 
 # Data generation
 
 ```{r data-generation}
+
+### Set seed to ensure replicable results
+set.seed(20171102);
 
 nA <- 5;          # nA : number of measurement in phase A
 nB <- 30;         # nB : number of measurement in phase B
@@ -144,7 +144,7 @@ dat <- data.frame(x=x,y=y)
 a <- data.frame(x = (31:35),y = rnorm(5, 6.5, 0.2) )        # add aditional random error in last five points
 dat1 <- rbind(dat,a)
 
-dat1$Phase <- c(rep(0,5),rep(1,35))
+dat1$Phase <- c(rep(0,5),rep(1,35));
 
 meanDiff(x=dat1$Phase, y= dat1$y)                  ## simple test of phase difference
 
@@ -242,14 +242,13 @@ ggsave(plot = figure3,
 
 ```{r fig4}
 
-a<-piecewiseRegr(dat1,
-                 timeVar = 'x',
-                 yVar = 'y',
-                 phaseVar = 'Phase',
-                 outputFile = "figure-4.png",
-                 showPlot=FALSE,
-                 outputWidth = defaultWidth,
-                 outputHeight = defaultHeight);
+piecewiseRegr(dat1,
+              timeVar = 'x',
+              yVar = 'y',
+              phaseVar = 'Phase',
+              outputFile = "figure-4.png",
+              outputWidth = defaultWidth,
+              outputHeight = defaultHeight);
 
 ```
 
@@ -259,7 +258,7 @@ a<-piecewiseRegr(dat1,
 
 dat5 <- data.frame(x = 0:19,
                    y = c(rnorm(5, 1.5, .8),
-                         rnorm(15, 3, .8)),
+                         rnorm(15, 6, .8)),
                    phase = c(rep(0,5),
                              rep(1,15)));
 
