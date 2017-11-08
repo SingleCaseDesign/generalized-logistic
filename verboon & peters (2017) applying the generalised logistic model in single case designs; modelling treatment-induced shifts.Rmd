@@ -390,7 +390,10 @@ fig9_plots <- lapply(1:6, function(i, dat = Singh) {
   dv <- names(dat)[5+is.even(i)];
   dvLabel <- c("Physical aggression", "Verbal aggression")[1+is.even(i)];
   dat <- dat[dat$tier == tier, c('time', 'phase', dv, 'id')];
-  return(genlog(dat,
+  
+  print(dat);
+  
+  return(genlog(data = dat,
                 timeVar = 'time',
                 yVar = dv,
                 phaseVar = 'phase')$output$plot +
