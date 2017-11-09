@@ -1,14 +1,14 @@
 ---
 title: 'Applying the generalised logistic model in single case designs: modelling
   treatment-induced shifts'
-author: "Peter Verboon & Gjalt-Jorn Ygram Peters"
+author: " "
 date: " November, 9, 2017"
 output: html_document
 ---
 
 # Part 1: Tutorial
 
-This brief tutorial illustrates how the two functions introduced in Verboon & Peters (2017) can be used.
+This brief tutorial illustrates how the two functions introduced in the manuscript can be used.
 
 ```{r tutorial-setup, include=FALSE}
 ### Show all R commands
