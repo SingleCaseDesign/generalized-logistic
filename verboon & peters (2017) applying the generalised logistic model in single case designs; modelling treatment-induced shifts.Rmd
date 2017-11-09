@@ -1,8 +1,8 @@
 ---
 title: 'Applying the generalised logistic model in single case designs: modelling
   treatment-induced shifts'
-author: "Peter Verboon & Gjalt-Jorn Ygram Peters"
-date: "18 October 2017"
+author: " "
+date: " November, 9, 2017"
 output: html_document
 ---
 
@@ -177,10 +177,11 @@ ggsave(plot = figure1,
 ```{r example-linear-fit}
 
 lmout <- lm(dat1$y ~ dat1$x)
-coef(lmout)
-deviance(lmout)
+
+paste0("Model deviance: ", formatC(deviance(lmout),format="f",digits=2))
 summary(lmout)
-acf(residuals(lmout))[1]
+
+paste0("Autocorrelation by lag 1: ", formatC(as.numeric(acf(residuals(lmout), plot=FALSE)[1][[1]]),format="f",digits=2))
 dat1$res <-residuals(lmout)
 
 ```
