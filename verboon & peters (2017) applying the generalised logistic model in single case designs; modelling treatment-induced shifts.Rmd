@@ -33,7 +33,7 @@ getDat();
 
 This function stores the data in a dataframe called `dat`.
 
-In this example, we will use the data from Singh (2007). This is included in the userfriendlyscience R package, and can be loaded by using the `data` function:
+In this example, we will use the data from Singh et al. (2007). This is included in the userfriendlyscience R package, and can be loaded by using the `data` function:
 
 ```{r tutorial-2}
 data(Singh);
