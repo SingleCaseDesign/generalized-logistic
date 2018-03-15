@@ -123,7 +123,7 @@ $(document).ready(function () {
 
 <div id="part-1-tutorial" class="section level1">
 <h1>Part 1: Tutorial</h1>
-<p>This brief tutorial illustrates how the two functions introduced in Verboon &amp; Peters (2017) can be used.</p>
+<p>This brief tutorial illustrates how the two functions introduced in the manuscript can be used.</p>
 <div id="loading-the-package-and-data" class="section level2">
 <h2>Loading the package and data</h2>
 <p>We start by installing and loading the package:</p>
@@ -132,7 +132,7 @@ require('userfriendlyscience');</code></pre>
 <p>Now that the package is installed and loaded, we can load the data. This can be done using a variety of functions, for example using <code>getData</code> from the userfriendlyscience package to display a dialogue to select the datafile:</p>
 <pre class="r"><code>getDat();</code></pre>
 <p>This function stores the data in a dataframe called <code>dat</code>.</p>
-<p>In this example, we will use the data from Singh (2007). This is included in the userfriendlyscience R package, and can be loaded by using the <code>data</code> function:</p>
+<p>In this example, we will use the data from Singh et al. (2007). This is included in the userfriendlyscience R package, and can be loaded by using the <code>data</code> function:</p>
 <pre class="r"><code>data(Singh);</code></pre>
 <p>This function loads the Singh data into a dataframe called Singh. This data concerns three participants, and we will only work with one participant in this example. We will therefore extract those lines from the <code>Signh</code> dataframe and store that selection in a dataframe called <code>dat</code>:</p>
 <pre class="r"><code>dat &lt;- Singh[Singh$id=='Jason', ];</code></pre>
