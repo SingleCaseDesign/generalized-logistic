@@ -66,6 +66,7 @@ schalen <- list(positief_affect = c(3, 6, 9, 10, 13),
 ### Voeg de schalen toe aan de dataframe
 dat <- makeScales(dat, schalen);
 
+
 ###########################################################################
 ### Start de analyses
 ###########################################################################
@@ -87,4 +88,5 @@ therapyMonitor.multi(dat, lines=1:34, conditionMoment=7,
                      variableColumn=names(schalen),
                      timeColumn = 'Tijdstempel', outputFiles=TRUE,
                      outputFilePath=
-                       'B:/Data/research/therapyMonitor (TvS)/tmp');
+                       'B:/Data/research/therapyMonitor (TvS)/tmp')
+
