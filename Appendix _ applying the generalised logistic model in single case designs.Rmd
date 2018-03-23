@@ -52,7 +52,7 @@ To conduct the piecewise regression analysis, we use function `piecewiseRegr`, w
 ```{r tutorial-4}
 piecewiseRegr(dat,
               timeVar='time',
-              yVar='score_physical',
+              yVar='score_verbal',
               phaseVar='phase');
 ```
 
