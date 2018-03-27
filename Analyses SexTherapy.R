@@ -66,6 +66,10 @@ SexTherapy <- rename(SexTherapy,c("Tijdstempel" = "time",
 SexTherapy$measurementNumber <- c(1:38)
 SexTherapy <- SexTherapy[,c(1,10,2:9)]
 
+# add new combined variabele
+
+SexTherapy <- makeScales(SexTherapy, list(erectionCombined = 7:8))
+
 ########
 # change position of case 7 to right temporal position if date is correct (time: july 5th)
 
@@ -144,13 +148,30 @@ examine(SexTherapy$intimacy)
 a <- genlog (SexTherapy2,
              timeVar='measurementNumber',
              yVar='intimacy',
-             baselineMeasurements = 6,
              startBase = 4,
-             startTop = 7)
+             startTop = 6,
+             baselineMeasurements = 6,
+             startGrowthRate = 2,
+             changeInitiationBounds = NULL,
+             baseBounds = c(2,5),
+             topBounds = c(4,7))
+             
 a$output$plot + labs(x = "Measurement points",y = "intimacy")
 a$output$dat
 
+b <- piecewiseRegr(data = SexTherapy2,
+                   yVar = "intimacy", 
+                   timeVar='measurementNumber', 
+                   baselineMeasurements = 6)
+b$output$coef
+b$output$ES
+b$output$Rsq.model
+b$output$deviance
+
+
 # This is a nice example
+
+# Erection Masturbation
 
 examine(SexTherapy$erectionMasturbation)
 a <- genlog (SexTherapy2,
@@ -162,6 +183,16 @@ a <- genlog (SexTherapy2,
 a$output$plot + labs(x = "Measurement points",y = "erectionMasturbation")
 a$output$dat
 
+
+b <- piecewiseRegr(data = SexTherapy2,
+                   yVar = "erectionMasturbation", 
+                   timeVar='measurementNumber', 
+                   baselineMeasurements = 6)
+b$output
+
+
+# erection Partner sex
+
 # only three points in A phase
 
 examine(SexTherapy$erectionPartnersex)
@@ -169,15 +200,18 @@ a <- genlog (SexTherapy2,
              timeVar='measurementNumber',
              yVar='erectionPartnersex',
              baselineMeasurements = 6,
-             startBase = 2.5,
-             startTop = 6)
+             startGrowthRate = NULL,
+             changeInitiationBounds = NULL,
+             baseBounds = c(2,3),
+             topBounds = c(4,6))
 a$output$plot + labs(x = "Measurement points",y = "erectionPartnersex")
 a$output$dat
 
-# convergence problems
+
+# Experience Masturbation
 
 examine(SexTherapy$experienceMasturbation)
-a <- genlog (SexTherapy,
+a <- genlog (SexTherapy2,
              timeVar='measurementNumber',
              yVar='experienceMasturbation',
              baselineMeasurements = 6,
@@ -186,10 +220,18 @@ a <- genlog (SexTherapy,
 a$output$plot + labs(x = "Measurement points",y = "experienceMasturbation")
 a$output$dat
 
+
+b <- piecewiseRegr(data = SexTherapy2,
+                   yVar = "experienceMasturbation", 
+                   timeVar='measurementNumber', 
+                   baselineMeasurements = 6)
+b$output
+
+
 # only three points in A phase
 
 examine(SexTherapy$experiencePartnerSex)
-a <- genlog (SexTherapy,
+a <- genlog (SexTherapy2,
              timeVar='measurementNumber',
              yVar='experiencePartnerSex',
              baselineMeasurements = 6,
@@ -197,6 +239,29 @@ a <- genlog (SexTherapy,
              startTop = 6)
 a$output$plot + labs(x = "Measurement points",y = "experiencePartnerSex")
 a$output$dat
+
+# Erection Combined
+
+SexTherapy2 <- subset(SexTherapy2,  !is.na(SexTherapy2$erectionCombined))
+
+examine(SexTherapy$erectionCombined)
+a <- genlog (SexTherapy2,
+             timeVar='measurementNumber',
+             yVar='erectionCombined',
+             baselineMeasurements = 6,
+             startBase = 3,
+             startTop = 4,
+             baseBounds = c(2,3),
+             topBounds = c(3,5))
+a$output$plot + labs(x = "Measurement points",y = "erectionCombined")
+a$output$dat
+
+
+b <- piecewiseRegr(data = SexTherapy2,
+                   yVar = "erectionCombined", 
+                   timeVar='measurementNumber', 
+                   baselineMeasurements = 6)
+b$output
 
 
 
