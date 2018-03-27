@@ -122,7 +122,9 @@ b <- piecewiseRegr(data = SexTherapy2,
 b$output
 
 
-# Self Esteem
+# Self Esteem 
+
+# in paper
 
 examine(SexTherapy2$selfEsteem)
 a <- genlog (SexTherapy2,
@@ -167,7 +169,7 @@ b$output$coef
 b$output$ES
 b$output$Rsq.model
 b$output$deviance
-
+b$output$plot
 
 # This is a nice example
 
@@ -188,7 +190,11 @@ b <- piecewiseRegr(data = SexTherapy2,
                    yVar = "erectionMasturbation", 
                    timeVar='measurementNumber', 
                    baselineMeasurements = 6)
-b$output
+b$output$coef
+b$output$ES
+b$output$Rsq.model
+b$output$deviance
+b$output$plot
 
 
 # erection Partner sex
@@ -210,22 +216,33 @@ a$output$dat
 
 # Experience Masturbation
 
+# remove missings
+
+SexTherapy3 <- subset(SexTherapy2,!is.na(SexTherapy2$experienceMasturbation))
+
 examine(SexTherapy$experienceMasturbation)
-a <- genlog (SexTherapy2,
+a <- genlog (SexTherapy3,
              timeVar='measurementNumber',
              yVar='experienceMasturbation',
              baselineMeasurements = 6,
-             startBase = 3,
-             startTop = 5)
+             startGrowthRate = 2,
+             startBase = 3.5,
+             startTop = 5,
+             baseBounds = c(3,5),
+             topBounds = c(4,6))
 a$output$plot + labs(x = "Measurement points",y = "experienceMasturbation")
 a$output$dat
 
 
-b <- piecewiseRegr(data = SexTherapy2,
+b <- piecewiseRegr(data = SexTherapy3,
                    yVar = "experienceMasturbation", 
                    timeVar='measurementNumber', 
                    baselineMeasurements = 6)
-b$output
+b$output$coef
+b$output$ES
+b$output$Rsq.model
+b$output$deviance
+b$output$plot
 
 
 # only three points in A phase
