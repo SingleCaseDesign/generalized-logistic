@@ -171,6 +171,11 @@ ggsave(plot = figure1,
        width = defaultWidth,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure1,
+       filename="figure-1.pdf",
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -212,6 +217,11 @@ ggsave(plot = figure2,
        width = defaultWidth,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure2,
+       filename="figure-2.pdf",
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -238,6 +248,11 @@ ggsave(plot = figure3,
        width = defaultWidth,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure3,
+       filename="figure-3.pdf",
+       width = defaultWidth,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -252,6 +267,14 @@ piecewiseRegr(dat1,
               outputFile = "figure-4.png",
               outputWidth = defaultWidth,
               outputHeight = defaultHeight);
+invisible(piecewiseRegr(dat1,
+                        timeVar = 'x',
+                        yVar = 'y',
+                        phaseVar = 'Phase',
+                        outputFile = "figure-4.pdf",
+                        ggsaveParams = list(units = "cm", dpi = 300),
+                        outputWidth = defaultWidth,
+                        outputHeight = defaultHeight));
 
 ```
 
@@ -272,6 +295,14 @@ piecewiseRegr(dat5,
               outputFile = "figure-5.png",
               outputWidth = defaultWidth,
               outputHeight = defaultHeight);
+invisible(piecewiseRegr(dat5,
+                        timeVar = 'x',
+                        yVar = 'y',
+                        phaseVar = 'phase',
+                        outputFile = "figure-5.pdf",
+                        ggsaveParams = list(units = "cm", dpi = 300),
+                        outputWidth = defaultWidth,
+                        outputHeight = defaultHeight));
 
 ### T-test for difference between means
 meanDiff(x=dat5$phase, y= dat5$y);
@@ -336,6 +367,11 @@ ggsave(plot = figure7,
        width = defaultWidth+6,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure7,
+       filename="figure-7.pdf",
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -381,6 +417,11 @@ ggsave(plot = figure8,
        width = defaultWidth+6,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure8,
+       filename="figure-8.pdf",
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -423,6 +464,11 @@ ggsave(plot = figure9,
        width = defaultWidth+6,
        height = defaultHeight,
        units='cm');
+ggsave(plot = figure9,
+       filename="figure-9.pdf",
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
 
 ```
 
@@ -460,6 +506,9 @@ dat$datetime <- parse_date_time(dat$time,
                                 orders="dmyhMs",
                                 tz="CET");
 
+### Add rank of measurement moment
+dat$measurementNumber <- order(dat$datetime);
+
 ### Variable names and tweaked start settings
 tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                         startBase = 3,
@@ -486,6 +535,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                   startBase = 4,
                                   startTop = 6,
                                   baseBounds = c(2, 5),
+                                  startGrowthRate = 2,
                                   topBounds = c(4, 7),
                                   plotLabs=list(x="Date",
                                                 y="Intimacy")),
@@ -565,14 +615,38 @@ sexTherapyResults <-
   });
 names(sexTherapyResults) <- names(tweakList);
 
+
+do.call(genlog,
+        args=c(list(data=dat,
+                    #timeVar='measurementNumber',
+                    timeVar='datetime',
+                    yVar='intimacy'),
+               list(baselineMeasurements = 6,
+                            startBase = 4,
+                            startTop = 6,
+                            baseBounds = c(2, 5),
+                            #growthRateBounds = c(-1000000, 1000000),
+                            startGrowthRate = 2,
+                            topBounds = c(4, 7),
+                            plotLabs=list(x="Date",
+                                          y="Intimacy"))));
+
+
+
 ### Combine plots
-figure10 <- grid.arrange(grobs = list(fig10.1,
-                                      fig10.2,
-                                      fig10.3,
-                                      fig10.4,
-                                      fig10.5,
-                                      fig10.6,
-                         ncol = 2));
+figure10 <- grid.arrange(grobs = unlist(lapply(names(tweakList),
+                                               function(x) {
+                                                 if (is.list(sexTherapyResults[[x]]$genlog.tweaked)) {
+                                                   return(list(sexTherapyResults[[x]]$piecewiseRegr$output$plot,
+                                                               sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
+                                                               sexTherapyResults[[x]]$genlog.tweaked$output$plot));
+                                                 } else {
+                                                   return(list(textGrob("(missing)"),
+                                                               textGrob("(missing)"),
+                                                               textGrob("(missing)")));
+                                                 }
+                                              }), recursive=FALSE),
+                         ncol = 3);
 
 ### Draw
 grid.newpage();
@@ -582,6 +656,11 @@ grid.draw(figure10);
 ggsave(plot = figure10,
        filename="figure-10.png",
        type='cairo',
+       width = defaultWidth+6,
+       height = defaultHeight,
+       units='cm');
+ggsave(plot = figure10,
+       filename="figure-10.pdf",
        width = defaultWidth+6,
        height = defaultHeight,
        units='cm');
