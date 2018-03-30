@@ -615,22 +615,42 @@ sexTherapyResults <-
   });
 names(sexTherapyResults) <- names(tweakList);
 
-
 do.call(genlog,
         args=c(list(data=dat,
                     #timeVar='measurementNumber',
                     timeVar='datetime',
                     yVar='intimacy'),
                list(baselineMeasurements = 6,
-                            startBase = 4,
-                            startTop = 6,
-                            baseBounds = c(2, 5),
-                            #growthRateBounds = c(-1000000, 1000000),
-                            startGrowthRate = 2,
-                            topBounds = c(4, 7),
-                            plotLabs=list(x="Date",
-                                          y="Intimacy"))));
+                    startBase = 4,
+                    startTop = 6,
+                    baseBounds = c(2, 5),
+                    #growthRateBounds = c(-1000000, 1000000),
+                    startGrowthRate = 2,
+                    topBounds = c(4, 7),
+                    yRange=c(1,7),
+                    plotLabs=list(x="Date",
+                                  y="Intimacy"))));
 
+genlogCompleteStartValues(data=dat,
+                          timeVar='datetime',
+                          yVar='intimacy',
+                          baselineMeasurements = 6,
+                          startBase = 4,
+                          startTop = 6,
+                          baseBounds = c(2, 5),
+                          startGrowthRate = 2,
+                          topBounds = c(4, 7));
+
+ggGenLogPlot(data=dat,
+             timeVar='datetime',
+             yVar='intimacy',
+             baselineMeasurements = 6,
+             startBase = 4,
+             startTop = 6,
+             baseBounds = c(2, 5),
+             startGrowthRate = 2,
+             topBounds = c(4, 7),
+             yRange=c(1,7));
 
 
 ### Combine plots
