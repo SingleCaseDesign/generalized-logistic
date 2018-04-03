@@ -652,7 +652,6 @@ ggGenLogPlot(data=dat,
              topBounds = c(4, 7),
              yRange=c(1,7));
 
-
 ### Combine plots
 figure10 <- grid.arrange(grobs = unlist(lapply(names(tweakList),
                                                function(x) {
@@ -677,13 +676,14 @@ ggsave(plot = figure10,
        filename="figure-10.png",
        type='cairo',
        width = defaultWidth+6,
-       height = defaultHeight,
+       height = defaultHeight*2,
        units='cm');
 ggsave(plot = figure10,
        filename="figure-10.pdf",
        width = defaultWidth+6,
-       height = defaultHeight,
+       height = defaultHeight*2,
        units='cm');
+
 
 ```
 
