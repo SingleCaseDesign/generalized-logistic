@@ -476,38 +476,11 @@ ggsave(plot = figure9,
 
 ```{r fig10}
 
-### Load local copy of the data to enhance script's reproducibility
-load("therapyMonitor-data.Rda");
+### Load data (stored in UFS)
+data(therapyMonitorData);
 
-### Invert inverted items
-dat <- invertItems(dat, c(22, 25, 28, 31));
-
-### Specify scales
-scales <- list(positiveAffect = c(3, 6, 9, 10, 13),
-               negativeAffect = c(4, 5, 7, 8, 11, 12, 14),
-               selfEsteem = c(21, 22, 23),
-               intimacy = 24:31,
-               erectionMasturbation = 47:49,
-               erectionPartnerSex = 56:58,
-               experienceMasturbation = c(50, 52, 53),
-               experiencePartnerSex = c(59, 61, 61));
-
-### Create scales and add to dataframe
-dat <- makeScales(dat, scales);
-
-### Aggregate erection variables
-dat <- makeScales(dat, list(erectionCombined = 7:8))
-
-### Rename time variable
-dat <- rename(dat, c("Tijdstempel" = "time"));
-
-### Convert it to the actual time format
-dat$datetime <- parse_date_time(dat$time,
-                                orders="dmyhMs",
-                                tz="CET");
-
-### Add rank of measurement moment
-dat$measurementNumber <- order(dat$datetime);
+### Shorter name
+dat <- therapyMonitorData;
 
 ### Variable names and tweaked start settings
 tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
@@ -683,7 +656,6 @@ ggsave(plot = figure10,
        width = defaultWidth+6,
        height = defaultHeight*2,
        units='cm');
-
 
 ```
 
