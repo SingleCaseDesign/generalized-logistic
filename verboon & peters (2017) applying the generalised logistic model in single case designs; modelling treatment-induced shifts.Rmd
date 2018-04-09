@@ -78,6 +78,30 @@ genlog(dat,
        phaseVar='phase');
 ```
 
+## Deciding on constraints and initial values
+
+The optimization algorithm used to fit the logistic function is quite sensitive to starting values and constraints. Therefore, visualising the data can be helpful when thinking about which values to use. The function `ggGenLogPlot` can facilitate this process. It can simply be called with the exact same arguments as the `genlog` function to plot the data as well as the 'valid regions' determined by the specified constraints and the initial value.
+
+```{r tutorial-7}
+ggGenLogPlot(dat,
+             timeVar='time',
+             yVar='score_physical',
+             phaseVar='phase');
+```
+
+Here, the blue dashed line and area indicate the initial and possible values for the start of the change. The greenish yellow dashed line and area indicate the initial and possible values for the ceiling, and the yellowish yellow dashed line and area indicate the initial and possible values for the floor.
+
+To see the exact values, the function `genlogCompleteStartValues` can be used:
+
+```{r tutorial-8}
+genlogCompleteStartValues(dat,
+                          timeVar='time',
+                          yVar='score_physical',
+                          phaseVar='phase');
+```
+
+The row with the starting values shows the initial values (and uses the names as in the generalized logistic function), and the `lowerBounds` and `upperBounds` rows show the constraints for each parameter.
+
 ## Final thoughts and customization
 
 A datafile used for `piecewiseRegr` and/or `genlog` should at the minimum contain two columns: one containing the measurements of the dependent variable, and one containing the measurement moments. This last column can either contain the dates of the measurements or an index ('rank') of the dates. If the measurement moments were roughly equally spaced over time, it doesn't matter much which is used; if the interval between consecutive measurement moments is varied, it is better to specify the exact dates.
@@ -86,12 +110,11 @@ It is possible to easily store the produced plot to a file. To do this, provide 
 
 For `piecewiseRegr`, the colors used to draw the plot can be changed by providing a `colors` parameter, which must be a list containing five values specifying the desired colors for the regression `pre` intervention, `post` intervention, the `diff`erence between the two phases, the `intervention`, and the `points`.
 
-For `genlog`, the colors used to draw the plot can be changed by providing a `colors` parameter, which must be a list containing five values specifying the desired colors for the upper and lower `bounds`, the sigmoid `curve`, the vertical line showing where the change is maximal (`mid`), the vertical line showing then the `intervention` started, and the `points`.
+For `genlog`, the colors used to draw the plot can be changed by providing a `colors` parameter, which must be a list containing five values specifying the desired colors for the upper and lower `bounds`, the sigmoid `curve`, the vertical line showing where the change is maximal (`mid`), the vertical line showing then the `intervention` started, and the `points`. The visibility can be specified using the `alpha` parameter, another list (the alpha channel specifies the transparency, or rather, opaqueness, of an object).
 
-For both functions, further customization is possible by specifying the ggplot2 `theme` to use, the `pointSize` and `pointAlpha` (the transparency, or rather, opaqueness, of the points),  the `lineSize`. The `genlog` function has an additional parameter `curveMultiplier`, used to multiply the size of the sigmoid curve compared to the other lines.
+For both functions, further customization is possible by specifying the ggplot2 `theme` to use and the `pointSize` and `lineSize`. The `genlog` function has an additional parameter `curveMultiplier`, used to multiply the size of the sigmoid curve compared to the other lines.
 
 To use different starting values and bounds when estimating the sigmoid, manually specify values for the `yRange`, `startX`, `startBase`, `startTop`, `startGrowthRate`, and `startV` to set the starting values, and `changeInitiationBounds`, `growthRateBounds`, `baseBounds`, `topBounds`, and `vBounds` to set the bounds. Instead of specifying `baseBounds` and `topBounds`, it's also possible to use `baseMargin` and `topMargin` to specify margins that will then be combined with the range of the dependent variable to set the constraints.
-
 
 # Part 2: Appendix
 
@@ -484,10 +507,11 @@ dat <- therapyMonitorData;
 
 ### Variable names and tweaked start settings
 tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
-                                        startBase = 3,
-                                        startTop = 6,
-                                        baseBounds = c(1, 3),
-                                        topBounds = c(5, 7),
+                                        startBase = 3.5,
+                                        startTop = 5,
+                                        baseBounds = c(3, 4),
+                                        topBounds = c(4, 6),
+                                        yRange=c(1,7),
                                         plotLabs=list(x="Date",
                                                       y="Positive affect")),
                   negativeAffect = list(baselineMeasurements = 6,
@@ -495,6 +519,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                         startTop = 5,
                                         baseBounds = c(1, 3),
                                         topBounds = c(4, 6),
+                                        yRange=c(1,7),
                                         plotLabs=list(x="Date",
                                                       y="Negative affect")),
                   selfEsteem = list(baselineMeasurements = 6,
@@ -502,14 +527,17 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                     startTop = 6,
                                     baseBounds = c(1, 4),
                                     topBounds = c(4, 7),
+                                    yRange=c(1,7),
                                     plotLabs=list(x="Date",
                                                   y="Self esteem")),
                   intimacy = list(baselineMeasurements = 6,
-                                  startBase = 4,
-                                  startTop = 6,
-                                  baseBounds = c(2, 5),
+                                  startBase = 5,
+                                  startTop = 5.5,
+                                  baseBounds = c(3, 7),
                                   startGrowthRate = 2,
+                                  growthRateBounds = c(-5, 5),
                                   topBounds = c(4, 7),
+                                  yRange=c(1,7),
                                   plotLabs=list(x="Date",
                                                 y="Intimacy")),
                   erectionMasturbation = list(baselineMeasurements = 6,
@@ -517,6 +545,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                               startTop = 6,
                                               #baseBounds = c(1, 3),
                                               #topBounds = c(5, 7),
+                                              yRange=c(1,7),
                                               plotLabs=list(x="Date",
                                                             y="Erection during masturbation")),
                   erectionPartnerSex = list(baselineMeasurements = 6,
@@ -524,6 +553,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                             startTop = NULL,
                                             baseBounds = c(2, 3),
                                             topBounds = c(4, 6),
+                                            yRange=c(1,7),
                                             plotLabs=list(x="Date",
                                                           y="Erection during sex with partner")),
                   experienceMasturbation = list(baselineMeasurements = 6,
@@ -532,6 +562,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                                 startTop = 5,
                                                 baseBounds = c(3, 5),
                                                 topBounds = c(4, 6),
+                                                yRange=c(1,7),
                                                 plotLabs=list(x="Date",
                                                               y="Experience during masturbation")),
                   experiencePartnerSex = list(baselineMeasurements = 6,
@@ -539,6 +570,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                               startTop = 6,
                                               #baseBounds = c(1, 3),
                                               #topBounds = c(5, 7),
+                                              yRange=c(1,7),
                                               plotLabs=list(x="Date",
                                                             y="Experience during sex with partner")),
                   erectionCombined = list(baselineMeasurements = 6,
@@ -546,97 +578,129 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                           startTop = 4,
                                           baseBounds = c(2, 3),
                                           topBounds = c(3, 5),
+                                          yRange=c(1,7),
                                           plotLabs=list(x="Date",
                                                         y="Erection index")));
 
-### Run functions
+########################################################################
+### For verification: run a single variable
+########################################################################
+
+### Perhaps worth exploring:
+### https://stats.stackexchange.com/questions/160552/why-is-nls-giving-me-singular-gradient-matrix-at-initial-parameter-estimates
+# 
+# currentVar <- 'intimacy';
+# 
+# do.call(piecewiseRegr,
+#         args=list(data=dat,
+#                   timeVar='datetime',
+#                   yRange=c(1,7),
+#                   yVar=currentVar,
+#                   baselineMeasurements = 6));
+# 
+# do.call(genlog,
+#         args=list(data=dat,
+#                   timeVar='datetime',
+#                   yRange=c(1,7),
+#                   yVar=currentVar,
+#                   baselineMeasurements = 6));
+# 
+# do.call(genlog,
+#         args=c(list(data=dat,
+#                     timeVar='datetime',
+#                     yVar=currentVar),
+#                tweakList[[currentVar]]));
+# 
+# do.call(ggGenLogPlot,
+#         args=c(list(data=dat,
+#                     timeVar='datetime',
+#                     yVar=currentVar),
+#                tweakList[[currentVar]]));
+# 
+# do.call(genlogCompleteStartValues,
+#         args=c(list(data=dat,
+#                     timeVar='datetime',
+#                     yVar=currentVar),
+#                tweakList[[currentVar]]));
+
+########################################################################
+### Run for all variables
+########################################################################
+
 sexTherapyResults <-
   lapply(names(tweakList),
          function(currentVar) {
     res <- list();
     
+    cat0("Starting on '", currentVar, "'... ");
+
+    cat("piecewiseRegr: ");
+    
     res$piecewiseRegr <- tryCatch({
       piecewiseRegr(data = dat,
                     timeVar='datetime', 
                     yVar = currentVar,
+                    yRange=c(1, 7),
                     baselineMeasurements = tweakList[[currentVar]]$baselineMeasurements,
                     plotLabs=tweakList[[currentVar]]$plotLabs);
     }, error=function(e) {
       return(paste0("\nError: \n\n", e));
     });
+
+    cat("Done. Nontweaked genlog: ");
     
     res$genlog.nonTweaked <- tryCatch({
       genlog(data=dat,
              timeVar='datetime',
              yVar=currentVar,
+             yRange=c(1, 7),
+             maxiter=200,
              baselineMeasurements = tweakList[[currentVar]]$baselineMeasurements,
              plotLabs=tweakList[[currentVar]]$plotLabs);
     }, error=function(e) {
       return(paste0("\nError: \n\n", e));
     });
+
+    cat("Done. Tweaked genlog: ");
     
     res$genlog.tweaked <- tryCatch({
       do.call(genlog,
               args=c(list(data=dat,
                           timeVar='datetime',
-                          yVar=currentVar),
+                          yVar=currentVar,
+                          maxiter=200),
                      tweakList[[currentVar]]));
     }, error=function(e) {
       return(paste0("\nError: \n\n", e));
     });
+
+    cat("Done.\n");
+
     return(res);
   });
 names(sexTherapyResults) <- names(tweakList);
 
-do.call(genlog,
-        args=c(list(data=dat,
-                    #timeVar='measurementNumber',
-                    timeVar='datetime',
-                    yVar='intimacy'),
-               list(baselineMeasurements = 6,
-                    startBase = 4,
-                    startTop = 6,
-                    baseBounds = c(2, 5),
-                    #growthRateBounds = c(-1000000, 1000000),
-                    startGrowthRate = 2,
-                    topBounds = c(4, 7),
-                    yRange=c(1,7),
-                    plotLabs=list(x="Date",
-                                  y="Intimacy"))));
+########################################################################
+### Combine plots, draw, and save
+########################################################################
 
-genlogCompleteStartValues(data=dat,
-                          timeVar='datetime',
-                          yVar='intimacy',
-                          baselineMeasurements = 6,
-                          startBase = 4,
-                          startTop = 6,
-                          baseBounds = c(2, 5),
-                          startGrowthRate = 2,
-                          topBounds = c(4, 7));
-
-ggGenLogPlot(data=dat,
-             timeVar='datetime',
-             yVar='intimacy',
-             baselineMeasurements = 6,
-             startBase = 4,
-             startTop = 6,
-             baseBounds = c(2, 5),
-             startGrowthRate = 2,
-             topBounds = c(4, 7),
-             yRange=c(1,7));
-
-### Combine plots
 figure10 <- grid.arrange(grobs = unlist(lapply(names(tweakList),
                                                function(x) {
-                                                 if (is.list(sexTherapyResults[[x]]$genlog.tweaked)) {
-                                                   return(list(sexTherapyResults[[x]]$piecewiseRegr$output$plot,
-                                                               sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
-                                                               sexTherapyResults[[x]]$genlog.tweaked$output$plot));
-                                                 } else {
-                                                   return(list(textGrob("(missing)"),
-                                                               textGrob("(missing)"),
-                                                               textGrob("(missing)")));
-                                                 }
+                                                 plot1 <-
+                                                   ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
+                                                             sexTherapyResults[[x]]$piecewiseRegr$output$plot,
+                                                             textGrob("(missing)"));
+                                                 plot2 <-
+                                                   ifelseObj(is.list(sexTherapyResults[[x]]$genlog.nonTweaked),
+                                                             sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
+                                                             textGrob("(missing)"));
+                                                 plot3 <-
+                                                   ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
+                                                             sexTherapyResults[[x]]$genlog.tweaked$output$plot,
+                                                             textGrob("(missing)"));
+                                                 return(list(plot1,
+                                                             plot2,
+                                                             plot3));
                                               }), recursive=FALSE),
                          ncol = 3);
 
@@ -649,13 +713,18 @@ ggsave(plot = figure10,
        filename="figure-10.png",
        type='cairo',
        width = defaultWidth+6,
-       height = defaultHeight*2,
+       height = defaultHeight*4,
        units='cm');
 ggsave(plot = figure10,
        filename="figure-10.pdf",
        width = defaultWidth+6,
-       height = defaultHeight*2,
+       height = defaultHeight*4,
        units='cm');
 
 ```
+
+
+
+## Add random four test datasets to show absence of growth.
+
 
