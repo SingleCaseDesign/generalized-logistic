@@ -16,6 +16,8 @@ knitr::opts_chunk$set(echo = TRUE);
 require('userfriendlyscience');
 safeRequire('plyr');
 safeRequire('lubridate');
+safeRequire('pander');
+panderOptions('table.split.table', Inf);
 ```
 
 ## Loading the package and data
@@ -116,7 +118,7 @@ For both functions, further customization is possible by specifying the ggplot2 
 
 To use different starting values and bounds when estimating the sigmoid, manually specify values for the `yRange`, `startX`, `startBase`, `startTop`, `startGrowthRate`, and `startV` to set the starting values, and `changeInitiationBounds`, `growthRateBounds`, `baseBounds`, `topBounds`, and `vBounds` to set the bounds. Instead of specifying `baseBounds` and `topBounds`, it's also possible to use `baseMargin` and `topMargin` to specify margins that will then be combined with the range of the dependent variable to set the constraints.
 
-# Part 2: Appendix
+# Part 2: Reproducibility appendix
 
 This section reproduces the Figures used in the paper.
 
@@ -131,6 +133,7 @@ safeRequire('ggplot2');
 safeRequire('grid');
 safeRequire('gridExtra');
 safeRequire('viridis');
+safeRequire('pander');
 
 ### Set color and size for plots
 defaultLineColor <- "#35B779FF";   ### viridis(4)[3]
@@ -458,7 +461,7 @@ fig9_plots <- lapply(1:6, function(i, dat = Singh) {
   dvLabel <- c("Physical aggression", "Verbal aggression")[1+is.even(i)];
   dat <- dat[dat$tier == tier, c('time', 'phase', dv, 'id')];
   
-  print(dat);
+  #print(dat);
   
   return(genlog(data = dat,
                 timeVar = 'time',
@@ -497,7 +500,7 @@ ggsave(plot = figure9,
 
 # Figure 10
 
-```{r fig10}
+```{r fig10, fig.height=16}
 
 ### Load data (stored in UFS)
 data(therapyMonitorData);
@@ -543,8 +546,8 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                   erectionMasturbation = list(baselineMeasurements = 6,
                                               startBase = 3,
                                               startTop = 6,
-                                              #baseBounds = c(1, 3),
-                                              #topBounds = c(5, 7),
+                                              baseBounds = c(3, 4),
+                                              topBounds = c(4, 5),
                                               yRange=c(1,7),
                                               plotLabs=list(x="Date",
                                                             y="Erection during masturbation")),
@@ -586,9 +589,6 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
 ### For verification: run a single variable
 ########################################################################
 
-### Perhaps worth exploring:
-### https://stats.stackexchange.com/questions/160552/why-is-nls-giving-me-singular-gradient-matrix-at-initial-parameter-estimates
-# 
 # currentVar <- 'intimacy';
 # 
 # do.call(piecewiseRegr,
@@ -721,10 +721,134 @@ ggsave(plot = figure10,
        height = defaultHeight*4,
        units='cm');
 
+########################################################################
+### Extract relevant statistics and generate table
+########################################################################
+
+table3 <- t(sapply(names(tweakList),
+                 function(x) {
+                   return(c(Dev = sexTherapyResults[[x]]$genlog.tweaked$output$deviance,
+                            Rsq = sexTherapyResults[[x]]$genlog.tweaked$output$Rsq,
+                            ES1 = sexTherapyResults[[x]]$genlog.tweaked$output$ES1,
+                            ES2 = sexTherapyResults[[x]]$genlog.tweaked$output$ES2,
+                            growthRate = sexTherapyResults[[x]]$genlog.tweaked$output$growthRate,
+                            IP = sexTherapyResults[[x]]$genlog.tweaked$output$inflectonPoint,
+                            base = sexTherapyResults[[x]]$genlog.tweaked$output$base,
+                            top = sexTherapyResults[[x]]$genlog.tweaked$output$top));
+                 }));
+
+cat("\n\n");
+
+pander(table3);
+
+cat("\n\n");
+
 ```
 
+# Part 3: Modeling random data
 
+```{r randomData}
 
-## Add random four test datasets to show absence of growth.
+set.seed(20180417);
 
+randomData <- data.frame(measurement = 1:20,
+                         normal = rnorm(20),
+                         uniform = runif(20),
+                         beta = rbeta(20, 2, 3));
 
+randomVarNames <- names(randomData)[-1];
+
+randomResults <-
+  lapply(randomVarNames,
+         function(currentVar) {
+    res <- list();
+    
+    cat0("Starting on '", currentVar, "'... ");
+
+    cat("piecewiseRegr: ");
+    
+    res$piecewiseRegr <- tryCatch({
+      piecewiseRegr(data = randomData,
+                    timeVar='measurement', 
+                    yVar = currentVar,
+                    baselineMeasurements = 6);
+    }, error=function(e) {
+      return(paste0("\nError: \n\n", e));
+    });
+
+    cat("Done. Nontweaked genlog: ");
+    
+    res$genlog.nonTweaked <- tryCatch({
+      genlog(data = randomData,
+             timeVar='measurement', 
+             yVar=currentVar,
+             baselineMeasurements = 6,
+             maxiter=200);
+    }, error=function(e) {
+      return(paste0("\nError: \n\n", e));
+    });
+
+    cat("Done.\n");
+
+    return(res);
+  });
+names(randomResults) <- randomVarNames;
+
+figure.randomData <-
+  grid.arrange(grobs = unlist(lapply(names(randomResults),
+                                     function(x) {
+                                       plot1 <-
+                                         ifelseObj(is.list(randomResults[[x]]$piecewiseRegr),
+                                                   randomResults[[x]]$piecewiseRegr$output$plot,
+                                                   textGrob("(missing)"));
+                                       plot2 <-
+                                         ifelseObj(is.list(randomResults[[x]]$genlog.nonTweaked),
+                                                   randomResults[[x]]$genlog.nonTweaked$output$plot,
+                                                   textGrob("(missing)"));
+                                       return(list(plot1,
+                                                   plot2));
+                                    }), recursive=FALSE),
+               ncol = 2);
+
+scdResultTable <- function(object, subobject=NULL) {
+  if (!is.null(subobject)) {
+    object <- object[[subobject]];
+  }
+  if ("genlog" %IN% class(object)) {
+    return(c(Dev = object$output$deviance,
+             Rsq = object$output$Rsq,
+             ES1 = object$output$ES1,
+             ES2 = object$output$ES2,
+             growthRate = object$output$growthRate,
+             IP = object$inflectonPoint,
+             base = object$output$base,
+             top = object$output$top));
+  } else if ("piecewiseRegr" %IN% class(object)) {
+    return(c(Dev = object$output$deviance,
+             Rsq = object$output$Rsq.null,
+             ES1 = object$output$Rsq.model,
+             ES2 = object$output$ES,
+             cohensD = object$intermediate$meanDiff$meanDiff.g));
+  } else {
+    stop("This function can only handle objects of class 'genlog' or 'piecewiseRegr'. ",
+         "You provided an object of class ", vecTxtQ(class(object)), ".");
+  }
+}
+
+randomData.piecewiseRegr <-
+  t(sapply(randomResults,
+           function(x) return(scdResultTable(x, subobject="piecewiseRegr"))));
+
+randomData.genlog <-
+  t(sapply(randomResults,
+           function(x) return(scdResultTable(x, subobject="genlog.nonTweaked"))));
+
+cat("\n\n");
+
+pander(randomData.piecewiseRegr);
+
+cat("\n\n");
+
+pander(randomData.genlog);
+
+```
