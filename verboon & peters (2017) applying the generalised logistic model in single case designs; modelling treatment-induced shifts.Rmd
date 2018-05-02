@@ -2,7 +2,7 @@
 title: 'Applying the generalised logistic model in single case designs: modelling
   treatment-induced shifts'
 author: "Peter Verboon & Gjalt-Jorn Ygram Peters"
-date: " November, 9, 2017"
+date: " May, 3, 2018"
 output: html_document
 ---
 
