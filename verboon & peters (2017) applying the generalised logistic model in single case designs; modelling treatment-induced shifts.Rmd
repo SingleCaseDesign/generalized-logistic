@@ -684,25 +684,49 @@ names(sexTherapyResults) <- names(tweakList);
 ### Combine plots, draw, and save
 ########################################################################
 
-figure10 <- grid.arrange(grobs = unlist(lapply(names(tweakList),
-                                               function(x) {
-                                                 plot1 <-
-                                                   ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
-                                                             sexTherapyResults[[x]]$piecewiseRegr$output$plot,
-                                                             textGrob("(missing)"));
-                                                 plot2 <-
-                                                   ifelseObj(is.list(sexTherapyResults[[x]]$genlog.nonTweaked),
-                                                             sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
-                                                             textGrob("(missing)"));
-                                                 plot3 <-
-                                                   ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
-                                                             sexTherapyResults[[x]]$genlog.tweaked$output$plot,
-                                                             textGrob("(missing)"));
-                                                 return(list(plot1,
-                                                             plot2,
-                                                             plot3));
-                                              }), recursive=FALSE),
-                         ncol = 3);
+figure10.full <-
+   grid.arrange(grobs = unlist(lapply(names(tweakList),
+                                        function(x) {
+                                          plot1 <-
+                                            ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
+                                                      sexTherapyResults[[x]]$piecewiseRegr$output$plot,
+                                                      textGrob("(missing)"));
+                                          plot2 <-
+                                            ifelseObj(is.list(sexTherapyResults[[x]]$genlog.nonTweaked),
+                                                      sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
+                                                      textGrob("(missing)"));
+                                          plot3 <-
+                                            ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
+                                                      sexTherapyResults[[x]]$genlog.tweaked$output$plot,
+                                                      textGrob("(missing)"));
+                                          return(list(plot1,
+                                                      plot2,
+                                                      plot3));
+                                       }), recursive=FALSE),
+                  ncol = 3);
+
+```
+
+```{r}
+
+figure10 <-
+  grid.arrange(grobs = unlist(lapply(c('selfEsteem',
+                                       'intimacy',
+                                       'experienceMasturbation'),
+                                     function(x) {
+                                       plot1 <-
+                                         ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
+                                                   sexTherapyResults[[x]]$piecewiseRegr$output$plot,
+                                                   textGrob("(missing)"));
+                                       plot2 <-
+                                         ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
+                                                   sexTherapyResults[[x]]$genlog.tweaked$output$plot,
+                                                   textGrob("(missing)"));
+                                       return(list(plot1,
+                                                   plot2));
+                                    }), recursive=FALSE),
+               ncol = 2);
+
 
 ### Draw
 grid.newpage();
@@ -713,24 +737,25 @@ ggsave(plot = figure10,
        filename="figure-10.png",
        type='cairo',
        width = defaultWidth+6,
-       height = defaultHeight*4,
+       height = defaultHeight*2,
        units='cm');
 ggsave(plot = figure10,
        filename="figure-10.pdf",
        width = defaultWidth+6,
-       height = defaultHeight*4,
+       height = defaultHeight*2,
        units='cm');
 
 ########################################################################
 ### Extract relevant statistics and generate table
 ########################################################################
 
-table3 <- t(sapply(names(tweakList),
+table3.full <-
+  t(sapply(names(tweakList),
                  function(x) {
-                   return(c(Dev = sexTherapyResults[[x]]$genlog.tweaked$output$deviance,
+                   return(c(D = sexTherapyResults[[x]]$genlog.tweaked$output$deviance,
                             Rsq = sexTherapyResults[[x]]$genlog.tweaked$output$Rsq,
-                            ES1 = sexTherapyResults[[x]]$genlog.tweaked$output$ES1,
-                            ES2 = sexTherapyResults[[x]]$genlog.tweaked$output$ES2,
+                            ESc = sexTherapyResults[[x]]$genlog.tweaked$output$ESc,
+                            ESr = sexTherapyResults[[x]]$genlog.tweaked$output$ESr,
                             growthRate = sexTherapyResults[[x]]$genlog.tweaked$output$growthRate,
                             IP = sexTherapyResults[[x]]$genlog.tweaked$output$inflectonPoint,
                             base = sexTherapyResults[[x]]$genlog.tweaked$output$base,
@@ -739,7 +764,34 @@ table3 <- t(sapply(names(tweakList),
 
 cat("\n\n");
 
+pander(table3.full);
+
+cat("\n\n");
+
+table3 <- table3.full[c(3, 4, 7), ];
+
+table3[, 1:5] <- round(table3[, 1:5], 2);
+table3[, 6:7] <- round(table3[, 6:7], 1);
+
 pander(table3);
+
+cat("\n\n");
+
+table4Supp.full <-
+  t(sapply(names(tweakList),
+                 function(x) {
+                   return(c(D = sexTherapyResults[[x]]$piecewiseRegr$output$deviance,
+                            Rsq.mdl = sexTherapyResults[[x]]$piecewiseRegr$output$Rsq.model,
+                            Rsq.null = sexTherapyResults[[x]]$piecewiseRegr$output$Rsq.null,
+                            ES = sexTherapyResults[[x]]$piecewiseRegr$output$ES));
+                 }));
+
+cat("\n\n");
+
+table4Supp.full[, 1] <- round(table4Supp.full[, 1], 1);
+table4Supp.full[, 2:4] <- round(table4Supp.full[, 2:4], 2);
+
+pander(table4Supp.full);
 
 cat("\n\n");
 
