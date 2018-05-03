@@ -701,10 +701,10 @@ figure10 <- grid.arrange(grobs = unlist(lapply(names(tweakList),
                                                              sexTherapyResults[[x]]$genlog.tweaked$output$plot,
                                                              textGrob("(missing)"));
                                                  return(list(plot1,
-                                                             plot2,
+                                                             #plot2,
                                                              plot3));
                                               }), recursive=FALSE),
-                         ncol = 3);
+                         ncol = 2);
 
 ### Draw
 grid.newpage();
