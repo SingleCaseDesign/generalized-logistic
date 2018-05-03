@@ -1,7 +1,7 @@
 ---
 title: 'Applying the generalised logistic model in single case designs: modelling treatment-induced shifts'
 author: "Peter Verboon & Gjalt-Jorn Ygram Peters"
-date: "May, 3, 2018"
+date: "`r format(Sys.time(), '%H:%M:%S on %Y-%m-%d %Z (GMT%z)')`"
 output: html_document
 ---
 
@@ -566,7 +566,7 @@ tweakList <- list(positiveAffect = list(baselineMeasurements = 6,
                                                 topBounds = c(4, 6),
                                                 yRange=c(1,7),
                                                 plotLabs=list(x="Date",
-                                                              y="Experience during masturbation")),
+                                                              y="Masturbation experience")),
                   experiencePartnerSex = list(baselineMeasurements = 6,
                                               startBase = 3,
                                               startTop = 5,
@@ -756,7 +756,8 @@ table3.full <-
                             ESc = sexTherapyResults[[x]]$genlog.tweaked$output$ESc,
                             ESr = sexTherapyResults[[x]]$genlog.tweaked$output$ESr,
                             growthRate = sexTherapyResults[[x]]$genlog.tweaked$output$growthRate,
-                            IP = sexTherapyResults[[x]]$genlog.tweaked$output$inflectonPoint,
+                            IP = format(sexTherapyResults[[x]]$genlog.tweaked$output$inflectionPoint,
+                            format="%Y-%m-%d"),
                             base = sexTherapyResults[[x]]$genlog.tweaked$output$base,
                             top = sexTherapyResults[[x]]$genlog.tweaked$output$top));
                  }));
@@ -769,8 +770,8 @@ cat("\n\n");
 
 table3 <- table3.full[c(3, 4, 7), ];
 
-table3[, 1:5] <- round(table3[, 1:5], 2);
-table3[, 6:7] <- round(table3[, 6:7], 1);
+table3[, 1:5] <- round(as.numeric(table3[, 1:5]), 2);
+table3[, 7:8] <- round(as.numeric(table3[, 7:8]), 1);
 
 pander(table3);
 
