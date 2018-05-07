@@ -16,6 +16,8 @@ require('userfriendlyscience');
 safeRequire('plyr');
 safeRequire('lubridate');
 safeRequire('pander');
+safeRequire('knitr');
+safeRequire('kableExtra');
 panderOptions('table.split.table', Inf);
 ```
 
@@ -706,7 +708,7 @@ figure10.full <-
 
 ```
 
-```{r}
+```{r, results='asis'}
 
 figure10 <-
   grid.arrange(grobs = unlist(lapply(c('selfEsteem',
@@ -773,7 +775,7 @@ table3 <- table3.full[c(3, 4, 7), ];
 table3[, 1:5] <- round(as.numeric(table3[, 1:5]), 2);
 table3[, 7:8] <- round(as.numeric(table3[, 7:8]), 1);
 
-pander(table3);
+kable(table3);
 
 cat("\n\n");
 
