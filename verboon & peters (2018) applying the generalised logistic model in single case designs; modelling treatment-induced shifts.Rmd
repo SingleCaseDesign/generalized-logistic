@@ -499,6 +499,113 @@ ggsave(plot = figure9,
 
 ```
 
+# Tables 1 and 2
+
+```{r tables_1_2}
+
+
+nA <- c(3,4,6)
+names <- c("Jason","Michael","Tim")
+
+SingResults <- list()
+for (i in 1:3) {
+dat <- subset(Singh, tier==i)  
+SingResults[[names[i]]] <- genlog(data=dat, yVar = "score_physical", timeVar = "time", baselineMeasurements = nA[i])
+}
+
+
+table1a <-
+  t(sapply(c("Jason","Michael","Tim"),
+           function(x) {
+             return(c(D = SingResults[[x]]$output$deviance,
+                      Rsq = SingResults[[x]]$output$Rsq,
+                      ESc = SingResults[[x]]$output$ESc,
+                      ESr = SingResults[[x]]$output$ESr,
+                      growthRate = SingResults[[x]]$output$growthRate,
+                      IP = format(SingResults[[x]]$output$inflectionPoint,
+                                  format="%Y-%m-%d"),
+                      base = SingResults[[x]]$output$base,
+                      top = SingResults[[x]]$output$top));
+           }));
+
+cat(" Generalized Logistic: Physical aggression")
+table1a[,1:8] <- round(as.numeric(table1a[,1:8]), 2);
+pander(table1a);
+
+SingResults <- list()
+for (i in 1:3) {
+  dat <- subset(Singh, tier==i)  
+  SingResults[[names[i]]] <- genlog(data=dat, yVar = "score_verbal", timeVar = "time", baselineMeasurements = nA[i])
+}
+table1b <-
+  t(sapply(c("Jason","Michael","Tim"),
+           function(x) {
+             return(c(D = SingResults[[x]]$output$deviance,
+                      Rsq = SingResults[[x]]$output$Rsq,
+                      ESc = SingResults[[x]]$output$ESc,
+                      ESr = SingResults[[x]]$output$ESr,
+                      growthRate = SingResults[[x]]$output$growthRate,
+                      IP = format(SingResults[[x]]$output$inflectionPoint,
+                                  format="%Y-%m-%d"),
+                      base = SingResults[[x]]$output$base,
+                      top = SingResults[[x]]$output$top));
+           }));
+
+cat(" Generalized Logistic: Verbal aggression")
+table1b[,1:8] <- round(as.numeric(table1b[,1:8]), 2);
+pander(table1b);
+
+
+SingResults <- list()
+for (i in 1:3) {
+  dat <- subset(Singh, tier==i)  
+  SingResults[[names[i]]] <- piecewiseRegr(data=dat, yVar = "score_physical", timeVar = "time", baselineMeasurements = nA[i])
+}
+
+table1c <-
+  t(sapply(c("Jason","Michael","Tim"),
+           function(x) {
+             return(c(D = SingResults[[x]]$output$deviance,
+                      Rsq.null = SingResults[[x]]$output$Rsq.null,
+                      Rsq.mdl = SingResults[[x]]$output$Rsq.model,
+                      ESr = SingResults[[x]]$output$ES,
+                      LC = SingResults[[x]]$output$coef["phaseVar"],
+                      TC = SingResults[[x]]$output$coef["trendTerm"],
+                      cohensD = SingResults[[x]]$intermediate$meanDiff$meanDiff.d));
+           }));
+colnames(table1c)[c(5,6)] <- c("Level change", "Trend change")
+cat("Piecewise regression: Physical aggression")
+table1c[,1:7] <- round(as.numeric(table1c[,1:7]), 2);
+pander(table1c);
+
+
+SingResults <- list()
+for (i in 1:3) {
+  dat <- subset(Singh, tier==i)  
+  SingResults[[names[i]]] <- piecewiseRegr(data=dat, yVar = "score_verbal", timeVar = "time", baselineMeasurements = nA[i])
+}
+
+
+table1d <-
+  t(sapply(c("Jason","Michael","Tim"),
+           function(x) {
+             return(c(D = SingResults[[x]]$output$deviance,
+                      Rsq.null = SingResults[[x]]$output$Rsq.null,
+                      Rsq.mdl = SingResults[[x]]$output$Rsq.model,
+                      ESr = SingResults[[x]]$output$ES,
+                      LC = SingResults[[x]]$output$coef["phaseVar"],
+                      TC = SingResults[[x]]$output$coef["trendTerm"],
+                      cohensD = SingResults[[x]]$intermediate$meanDiff$meanDiff.d));
+           }));
+colnames(table1d)[c(5,6)] <- c("Level change", "Trend change")
+cat("Piecewise regression: Verbal aggression")
+table1d[,1:7] <- round(as.numeric(table1d[,1:7]), 2);
+pander(table1d);
+
+cat("\n\n");
+
+```
+
 # Figure 10
 
 ```{r fig10, fig.height=16}
@@ -685,26 +792,26 @@ names(sexTherapyResults) <- names(tweakList);
 ### Combine plots, draw, and save
 ########################################################################
 
-figure10.full <-
-   grid.arrange(grobs = unlist(lapply(names(tweakList),
-                                        function(x) {
-                                          plot1 <-
-                                            ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
-                                                      sexTherapyResults[[x]]$piecewiseRegr$output$plot,
-                                                      textGrob("(missing)"));
-                                          plot2 <-
-                                            ifelseObj(is.list(sexTherapyResults[[x]]$genlog.nonTweaked),
-                                                      sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
-                                                      textGrob("(missing)"));
-                                          plot3 <-
-                                            ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
-                                                      sexTherapyResults[[x]]$genlog.tweaked$output$plot,
-                                                      textGrob("(missing)"));
-                                          return(list(plot1,
-                                                      plot2,
-                                                      plot3));
-                                       }), recursive=FALSE),
-                  ncol = 3);
+# figure10.full <-
+#    grid.arrange(grobs = unlist(lapply(names(tweakList),
+#                                         function(x) {
+#                                           plot1 <-
+#                                             ifelseObj(is.list(sexTherapyResults[[x]]$piecewiseRegr),
+#                                                       sexTherapyResults[[x]]$piecewiseRegr$output$plot,
+#                                                       textGrob("(missing)"));
+#                                           plot2 <-
+#                                             ifelseObj(is.list(sexTherapyResults[[x]]$genlog.nonTweaked),
+#                                                       sexTherapyResults[[x]]$genlog.nonTweaked$output$plot,
+#                                                       textGrob("(missing)"));
+#                                           plot3 <-
+#                                             ifelseObj(is.list(sexTherapyResults[[x]]$genlog.tweaked),
+#                                                       sexTherapyResults[[x]]$genlog.tweaked$output$plot,
+#                                                       textGrob("(missing)"));
+#                                           return(list(plot1,
+#                                                       plot2,
+#                                                       plot3));
+#                                        }), recursive=FALSE),
+#                   ncol = 3);
 
 ```
 
@@ -746,6 +853,12 @@ ggsave(plot = figure10,
        height = defaultHeight*2,
        units='cm');
 
+cat("\n\n");
+```
+
+# Table 3 
+
+```{r table3}
 ########################################################################
 ### Extract relevant statistics and generate table
 ########################################################################
@@ -766,7 +879,7 @@ table3.full <-
 
 cat("\n\n");
 
-pander(table3.full);
+# full table not printed:  pander(table3.full);
 
 cat("\n\n");
 
@@ -793,13 +906,18 @@ cat("\n\n");
 table4Supp.full[, 1] <- round(table4Supp.full[, 1], 1);
 table4Supp.full[, 2:4] <- round(table4Supp.full[, 2:4], 2);
 
-pander(table4Supp.full);
+cat(" Additional table for Piecewise regression (not shown in paper)");
+cat("\n\n");
+
+pander(table4Supp.full[c(3, 4, 7), ]);
 
 cat("\n\n");
 
 ```
 
 # Part 3: Modeling random data
+
+In this part we illustrate how the functions behave under random data.
 
 ```{r randomData}
 
@@ -864,6 +982,8 @@ figure.randomData <-
                                     }), recursive=FALSE),
                ncol = 2);
 
+cat("\n\n");
+
 scdResultTable <- function(object, subobject=NULL) {
   if (!is.null(subobject)) {
     object <- object[[subobject]];
@@ -871,17 +991,17 @@ scdResultTable <- function(object, subobject=NULL) {
   if ("genlog" %IN% class(object)) {
     return(c(Dev = object$output$deviance,
              Rsq = object$output$Rsq,
-             ES1 = object$output$ES1,
-             ES2 = object$output$ES2,
+             ESc = object$output$ES1,
+             ESr = object$output$ES2,
              growthRate = object$output$growthRate,
              IP = object$inflectonPoint,
              base = object$output$base,
              top = object$output$top));
   } else if ("piecewiseRegr" %IN% class(object)) {
     return(c(Dev = object$output$deviance,
-             Rsq = object$output$Rsq.null,
-             ES1 = object$output$Rsq.model,
-             ES2 = object$output$ES,
+             Rsq.null = object$output$Rsq.null,
+             RSq.mdl = object$output$Rsq.model,
+             ES = object$output$ES,
              cohensD = object$intermediate$meanDiff$meanDiff.g));
   } else {
     stop("This function can only handle objects of class 'genlog' or 'piecewiseRegr'. ",
@@ -889,9 +1009,14 @@ scdResultTable <- function(object, subobject=NULL) {
   }
 }
 
+cat("\n\n");
+cat("Piecewise regression results");
+
 randomData.piecewiseRegr <-
   t(sapply(randomResults,
            function(x) return(scdResultTable(x, subobject="piecewiseRegr"))));
+
+
 
 randomData.genlog <-
   t(sapply(randomResults,
@@ -901,6 +1026,8 @@ cat("\n\n");
 
 pander(randomData.piecewiseRegr);
 
+cat("\n\n");
+cat("Generalized logistic results");
 cat("\n\n");
 
 pander(randomData.genlog);
